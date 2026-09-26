@@ -167,6 +167,10 @@ function TaskList:removeAll()
 	if answer == "y" or answer == "Y" then
 		print("Ok!")
 		local file = io.open("tasks.csv", "w")
+		if not file then
+			print("Error: Couldn't open file")
+			return
+		end
 		file:write("No registered tasks!")
 		file:close()
 	else

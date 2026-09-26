@@ -6,9 +6,8 @@ local taskLister = TaskList:new()
 local subCommand = {}
 
 subCommand["add"] = function(args)
-	local description = args[1]
-	local deadline = args[2]
-
+	local description = args[2]
+	local deadline = args[3]
 	local t = Task:new(description, deadline)
 	taskLister:addTask(t)
 	taskLister:saveToCSV()
