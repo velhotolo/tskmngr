@@ -14,16 +14,17 @@ end
 
 -- Add Task function
 function TaskList:addTask(task)
-	local isFormatDate = task.deadline:match("^%d%d%d%d-%d%d%-%d%d$")
-	local isFormatDay = task.deadline:match("^%d%d%d%d-%d%d%-%d%d$")
+	local isFormatDate = task.deadline:match("%d%d%d%d-%d%d%-%d%d")
 	if type(task.deadline) ~= "string" then
 		print("Only strings accepted. Please type a string (use ", " in the beginning and ending of a phrase")
-	end
-	if isFormatDate or isFormatDay then
-		table.insert(self.tasks, task)
-		print("Task " .. task.description .. " added successfully")
+		print("No tasks added")
 	else
-		print("Error: Please type in a deadline in YYYY-MM-DD or 'X days' formats")
+		if isFormatDate == task.deadline:match("%d%d%d%d-%d%d%-%d%d") then
+			table.insert(self.tasks, task)
+			print("Task " .. task.description .. " added successfully")
+		else
+			print("Error: Please type in a deadline in YYYY-MM-DD or 'X days' formats")
+		end
 	end
 end
 

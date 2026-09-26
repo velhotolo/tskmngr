@@ -24,7 +24,6 @@ function Task:overdueCheck(id, taskListObj)
 		month = tonumber(string.sub(chosenOne.deadline, 6, 7)) or 1,
 		day = tonumber(string.sub(chosenOne.deadline, 9, 10)) or 1,
 	})
-
 	local currentDate = os.time() -- catches current timestamp
 	if currentDate > deadlineDate then
 		print("The task is overdue")
