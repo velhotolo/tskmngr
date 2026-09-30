@@ -1,14 +1,14 @@
+#!/usr/bin/env lua
 Task = require("Task")
 TaskList = require("Tasklist")
 
 local taskLister = TaskList:new()
 
 local subCommand = {}
-
 subCommand["add"] = function(args)
-	local description = args[2]
-	local deadline = args[3]
-	local t = Task:new(description, deadline)
+	local description = args[1]
+	local deadline = args[2]
+	local t = Task:new(description, deadline, id)
 	taskLister:addTask(t)
 	taskLister:saveToCSV()
 end
@@ -19,11 +19,6 @@ subCommand["list"] = function(args)
 end
 
 subCommand["remove"] = function(args)
-	if not args[1] then
-		print("Usage: lua TaskApp.lua remove <id1> [id2] [id3] ...")
-		return
-	end
-
 	local inputString = table.concat(args, " ")
 	local idsToRemove = {}
 
@@ -58,5 +53,5 @@ end
 if subCommand[command] then
 	subCommand[command](parametros)
 else
-	print("Comando não reocnhecido ou vazio")
+	print("Not recognized. Typ -h for help")
 end

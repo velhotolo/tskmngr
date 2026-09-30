@@ -1,5 +1,5 @@
 local Task = require("Task") --Loading the "Task.lua"
-
+local Colours = require("Colours")
 TaskList = {} -- Creating TaskList class
 TaskList.__index = TaskList
 
@@ -8,23 +8,33 @@ function TaskList:new()
 	local abj = setmetatable({}, TaskList)
 	abj.tasks = {} -- Table object to insert objects into
 	abj.dataFilename = "tasks.csv"
-
 	return abj
 end
 
+local Colorizer = Colours:new(Colours.color_code, Colours.message, Colours.warning)
+
 -- Add Task function
 function TaskList:addTask(task)
-	local isFormatDate = task.deadline:match("%d%d%d%d-%d%d%-%d%d")
-	if type(task.deadline) ~= "string" then
-		print("Only strings accepted. Please type a string (use ", " in the beginning and ending of a phrase")
-		print("No tasks added")
+	if not task.deadline:match("%d%d%d%d%-%d%d%-%d%d") and #task.deadline == 10 then
+		Colorizer:print_colored(
+			Colorizer.ANSI.RED,
+			"Error: you must write the deadline in YYYY-MM-DD format",
+			Colorizer.warning
+		)
 	else
-		if isFormatDate == task.deadline:match("%d%d%d%d-%d%d%-%d%d") then
-			table.insert(self.tasks, task)
-			print("Task " .. task.description .. " added successfully")
-		else
-			print("Error: Please type in a deadline in YYYY-MM-DD or 'X days' formats")
-		end
+		month = tonumber(string.sub(task.deadline, 6, 7)) or 01
+		day = tonumber(string.sub(task.deadline, 9, 10)) or 01
+	end
+
+	if month >= 1 and month <= 12 and day >= 1 and day <= 31 then
+		table.insert(self.tasks, task)
+		Colorizer:print_colored(
+			Colorizer.ANSI_GREEN,
+			"Task " .. task.description .. " added successfully",
+			Colorizer.warning
+		)
+	else
+		Colorizer:print_colored(Colorizer.ANSI_RED, "Error: invalid deadline date", Colorizer.warning)
 	end
 end
 
@@ -32,7 +42,10 @@ function TaskList:saveToCSV()
 	local file = io.open(self.dataFilename, "a")
 	if file then
 		if #self.tasks > 0 then
-			print("Saving " .. #self.tasks .. " tasks to " .. self.dataFilename .. "...")
+			Colorizer:print_colored(
+				Colorizer.ANSI_BOLD,
+				"Saving " .. #self.tasks .. " tasks to " .. self.dataFilename .. "..." .. Colorizer.warning
+			)
 			for _, task in ipairs(self.tasks) do
 				local desc = task.description or "No description"
 				local deadln = task.deadline or "No deadline"
@@ -40,9 +53,9 @@ function TaskList:saveToCSV()
 				file:write(desc .. "," .. deadln .. "\n")
 			end
 			file:close()
-			print("Tasks saved successfully!")
+			Colorizer:print_colored(Colorizer.ANSI_GREEN, "Tasks saved successfully!" .. Colorizer.warning)
 		else
-			print("No new tasks to save.")
+			Colorizer:print_colored(Colorizer.ANSI_RED, "No new tasks to save." .. Colorizer.warning)
 		end
 	end
 end
@@ -50,7 +63,10 @@ end
 function TaskList:saveRemove()
 	local file = io.open(self.dataFilename, "w")
 	if file then
-		print("Saving " .. #self.tasks .. " tasks to " .. self.dataFilename .. "...")
+		Colorizer:print_colored(
+			Colorizer.ANSI_BG_GREEN,
+			"Saving " .. #self.tasks .. " tasks to " .. self.dataFilename .. "..." .. Colorizer.warning
+		)
 		for _, task in ipairs(self.tasks) do
 			local desc = task.description or "No description"
 			local deadln = task.deadline or "No deadline"
@@ -58,15 +74,21 @@ function TaskList:saveRemove()
 			file:write(desc .. "," .. deadln .. "\n")
 		end
 		file:close()
-		print("Tasks saved successfully!")
+		Colorizer:print_colored(Colorizer.ANSI_BG_GREEN, "Tasks saved successfully!" .. Colorizer.warning)
 	else
-		print("Error: Could not open file " .. self.dataFilename .. " for writing.")
+		Colorizer:print_colored(
+			Colorizer.ANSI_BG_RED,
+			"Error: Could not open file " .. self.dataFilename .. " for writing." .. Colorizer.warning
+		)
 	end
 end
 
 function TaskList:loadFromCSV()
 	if not self.dataFilename then
-		print("Erro: O nome do arquivo CSV não foi definido em dataFilename!")
+		Colorizer:print_colored(
+			Colorizer.ANSI_BG_RED,
+			"Erro: O nome do arquivo CSV não foi definido em dataFilename!" .. Colorizer.warning
+		)
 		return
 	end
 	local file = io.open(self.dataFilename, "r")
@@ -86,17 +108,17 @@ function TaskList:loadFromCSV()
 		end
 	end
 	file:close()
-	print("Loaded tasks successfully")
+	Colorizer:print_colored(Colorizer.ANSI_BLUE, "Loaded tasks successfully" .. Colorizer.warning)
 end
 
 function TaskList:listTask()
-	print("Listing tasks...")
+	Colorizer:print_colored(Colorizer.ANSI_BOLD, "Listing tasks..." .. Colorizer.warning)
 	if #self.tasks == 0 then -- checking for empty inputs
-		print("No tasks in the list.")
+		Colorizer:print_colored(Colorizer.ANSI_RED, "No tasks in the list." .. Colorizer.warning)
 	else
 		for _, task_item in ipairs(self.tasks) do -- "task_item" just refers to an item inside tasks table.
-			task_item:showInfo() -- showInfo is a function from the Task class.
-			print("------------------------------")
+			Task:showInfo(task_item) -- showInfo is a function from the Task class.
+			Colorizer:print_colored(Colorizer.ANSI_BLUE, "------------------", Colorizer.warning)
 		end
 	end
 end
@@ -108,7 +130,7 @@ function TaskList:removeTask(ids)
 	self.tasks = self.tasks or {}
 
 	if not ids then
-		print("Error: no ID provided")
+		Colorizer:print_colored(Colorizer.ANSI_RED, "Error: no ID provided" .. Colorizer.warning)
 		return false
 	end
 
@@ -117,7 +139,7 @@ function TaskList:removeTask(ids)
 		if singleId then
 			ids = { singleId }
 		else
-			print("Error: invalid ID")
+			Colorizer:print_colored(Colorizer.ANSI_RED, "Error: invalid ID" .. Colorizer.warning)
 		end
 	end
 
@@ -131,12 +153,18 @@ function TaskList:removeTask(ids)
 				table.insert(validIds, id)
 			end
 		else
-			print("Warning: The ID " .. tostring(id) .. " is invalid or doesn't exist. Ignoring it...")
+			Colorizer:print_colored(
+				Colorizer.ANSI_RED,
+				"Warning: The ID "
+					.. tostring(id)
+					.. " is invalid or doesn't exist. Ignoring it..."
+					.. Colorizer.warning
+			)
 		end
 	end
 
 	if #validIds == 0 then
-		print("Error: no valid ID to remove")
+		Colorizer:print_colored(Colorizer.ANSI_RED, "Error: no valid ID to remove" .. Colorizer.warning)
 		return false
 	end
 
@@ -154,7 +182,7 @@ function TaskList:removeTask(ids)
 
 	self:saveRemove()
 
-	print("Success! " .. #validIds .. " removed tasks!")
+	Colorizer:print_colored(Colorizer.ANSI_GREEN, "Success! " .. #validIds .. " removed tasks!" .. Colorizer.warning)
 	for _, name in ipairs(removedNames) do
 		print("-" .. name)
 	end
@@ -162,19 +190,19 @@ function TaskList:removeTask(ids)
 end
 
 function TaskList:removeAll()
-	print("Are you sure you want to remove ALL TASKS?? y/n")
+	Colorizer:print_colored(Colorizer.ANSI_RED, "Are you sure you want to remove ALL TASKS?? y/n" .. Colorizer.warning)
 	local answer = tostring(io.read())
 	if answer == "y" or answer == "Y" then
-		print("Ok!")
+		Colorizer:print_colored(Colorizer.ANSI_BLUE, "Ok!" .. Colorizer.warning)
 		local file = io.open("tasks.csv", "w")
 		if not file then
-			print("Error: Couldn't open file")
+			Colorizer:print_colored(Colorizer.ANSI_RED, "Error: Couldn't open file" .. Colorizer.warning)
 			return
 		end
-		file:write("No registered tasks!")
+		file:write(" ")
 		file:close()
 	else
-		print("Ok, tasks preserved.")
+		Colorizer:print_colored(Colorizer.ANSI_BLUE, "Ok, tasks preserved." .. Colorizer.warning)
 	end
 end
 
